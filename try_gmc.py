@@ -19,8 +19,8 @@ def moment_conditions(beta, x, y, z):
 
 """
 
-The optimisation is over a vector, P say, where P[0] = beta, the model parameter
-and P[:1] is the vector of sample probabilities which are initially set to all be 1/T.
+The optimisation is over the vector b, where b[0] = beta, the model parameter
+and b[:1] is the vector of sample probabilities which are initially set to all be 1/T.
 
 """
 def GMC_constraint_one(b):
