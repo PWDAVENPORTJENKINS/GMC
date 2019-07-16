@@ -13,6 +13,10 @@ import time
 from scipy.optimize import LinearConstraint, Bounds
 import operator
 
+
+def moment_conditions(beta, x, y, z):
+    return (np.add(y, -beta * x) * z).T
+
 """
 
 The optimisation is over a vector, P say, where P[0] = beta, the model parameter
