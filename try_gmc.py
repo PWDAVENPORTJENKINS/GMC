@@ -23,16 +23,17 @@ The optimisation is over a vector, P say, where P[0] = beta, the model parameter
 and P[:1] is the vector of sample probabilities which are initially set to all be 1/T.
 
 """
-def GMC_constraint_one(x):
+def GMC_constraint_one(b):
     # Constrain the sum of all elements, except the first, to be equal to 1
-    # That is the sum of the sample probabilities is equal to one 
-    return np.sum(x[1:]) - 1
+    # That is the sum of the sample probabilities is equal to one
+    return np.sum(b[1:]) - 1
 
 
-def GMC_constraint_two(moments, x):
+def GMC_constraint_two(x, y, z, b):
     # Here we want that the products of the i^th sample probability
-    # and the i^th moment vectors all sum to zero.  
-    m = x[1:]
+    # and the i^th moment vectors all sum to zero.
+    moments = moment_conditions(b[0], x, y, z)
+    m = b[1:]
     return sum(moments * m[:, np.newaxis])
 
 
@@ -43,14 +44,12 @@ def GMC_objective_function(T, x):
 def GMC(beta, x, y, z, K, T):
     mu = np.ones(T) / T
     initial_params = np.insert(mu, 0, beta)
-    moments_matrix = moment_conditions(beta, x, y, z)
-    lower_bound = np.ones(T) * 1e-3
+    lower_bound = np.ones(T) * 1e-6
     lower_bound = np.insert(lower_bound, 0, -np.inf)
     upper_bound = np.ones(T)
     upper_bound = np.insert(upper_bound, 0, np.inf)
     feasible_bounds = Bounds(lower_bound, upper_bound, keep_feasible=True)
-    constraint_two = partial(GMC_constraint_two, moments_matrix)
-
+    constraint_two = partial(GMC_constraint_two, x, y, z)
     constraint = [
                     {'type': 'eq', 'fun': GMC_constraint_one},
                     {'type': 'eq', 'fun': constraint_two}
@@ -90,5 +89,12 @@ start_time = time.time()
 
 beta_guess = 0.5
 values_GMC = GMC(beta_guess, x, y, z, K, T)
+print("#########################################")
 
+"""
+Appear to be getting that sum(values_GMC[:1]) = values_GMC[0]
+every time.
+"""
+print(values_GMC - sum(values_GMC[:1]))
+print("#########################################")
 print("--- Total Time: {} seconds ---".format(time.time() - start_time))
